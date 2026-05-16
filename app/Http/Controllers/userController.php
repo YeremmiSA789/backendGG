@@ -23,6 +23,10 @@ class userController extends Controller
 {
     //
 
+    public function laravel(){
+        return response()->json("Esto es un recodatorio de como se usa laravel");
+    }
+
     public function registro(Request $peticion){
 
         $peticion->validate([

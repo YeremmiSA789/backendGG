@@ -6,6 +6,10 @@ use App\Http\Controllers\JuegosController;
 use App\Http\Controllers\userController;
 use Illuminate\Support\Facades\Route;
 
+
+
+Route::get('Retomando_Laravel', [userController::class, 'laravel']);
+
 // ROLES CREADOS // admin // cliente // usuarios // soporte // moderador // gestor de inventario // verificador de contenido
 
 Route::get('/users', function () {
@@ -49,3 +53,10 @@ Route::get('cesta/{id}/revisar', [JuegosController::class, 'revisarCesta']);
 // JUEGOS REGISTRO, EDICIÓN
 Route::get('categorias', [CategoriasController::class, 'getCategorias']);
 Route::get('categoria_actual/{id}', [CategoriasController::class, 'getCategoria_juego']);
+
+Route::get('buscar', [JuegosController::class, 'getBuscador']);
+Route::post('registrarJuego', [JuegosController::class, 'Post_registroJuego']);
+// Desactivar imagen de la galería
+Route::put('imagenes/desactivarImagenGaleria/{id}', [JuegosController::class, 'desactivarGaleria']);
+
+Route::put('actualizarJuego/{id}', [JuegosController::class, 'put_ActualizarJuego']);

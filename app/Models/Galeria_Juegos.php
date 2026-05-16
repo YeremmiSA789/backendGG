@@ -11,6 +11,13 @@ class Galeria_Juegos extends Model
     use HasFactory;
     protected $table = 'galeria_juegos'; // Nombre correcto de la tabla
 
+    protected $fillable = ['ruta_img', 'activo'];
+
+    public function juego(){
+        return $this->belongsTo(Juegos::class, 'juego_id');
+    }
+
+
 
     public function juegos():BelongsTo{
         return $this->belongsTo(Juegos::class, 'juego_id');

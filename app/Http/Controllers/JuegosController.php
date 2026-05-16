@@ -9,7 +9,6 @@ use App\Models\Juegos;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use PhpParser\Node\Expr\New_;
 
 class JuegosController extends Controller
 {
@@ -62,7 +61,7 @@ class JuegosController extends Controller
     public function getGaleria($id)
     {
 
-        $infoGaleria = Galeria_Juegos::select('id', 'ruta_img', 'activo')->where('juego_id', '=', $id)->get();
+        $infoGaleria = Galeria_Juegos::select('id', 'ruta_img', 'activo')->where('juego_id', '=', $id)->where('activo', '=', 1)->get();
 
         // Obtener solo las rutas de imágenes de la galería asociadas al juego
         $galeria = Galeria_Juegos::where('juego_id', '=', $id)
@@ -124,23 +123,23 @@ class JuegosController extends Controller
 
         // if ($id != 0) {
 
-            // $cestasInfo = Cesta::with(['user', 'juego'])
-            $cestasInfo = Cesta::with(['user:id,usuario', 'juego:id,titulo,portada,versionJuego,precio,descuento,precioDescontado'])
-                ->where('activo', 1)
-                ->where('users_id', '=', $id) // Puedes filtrar por cestas activas
-                ->get();
+        // $cestasInfo = Cesta::with(['user', 'juego'])
+        $cestasInfo = Cesta::with(['user:id,usuario', 'juego:id,titulo,portada,versionJuego,precio,descuento,precioDescontado'])
+            ->where('activo', 1)
+            ->where('users_id', '=', $id) // Puedes filtrar por cestas activas
+            ->get();
 
-            // Calcula el total sumando los precios descontados
-            $total = $cestasInfo->sum(function ($cesta) {
-                // Si hay un precio descontado, úsalo; de lo contrario, usa el precio normal
-                return $cesta->juego->precioDescontado ?? $cesta->juego->precio;
-            });
+        // Calcula el total sumando los precios descontados
+        $total = $cestasInfo->sum(function ($cesta) {
+            // Si hay un precio descontado, úsalo; de lo contrario, usa el precio normal
+            return $cesta->juego->precioDescontado ?? $cesta->juego->precio;
+        });
 
-            return response()->json([
-                "Info de la cesta" => $cestasInfo,
-                "Total" => $total
-            ]);
-            
+        return response()->json([
+            "Info de la cesta" => $cestasInfo,
+            "Total" => $total
+        ]);
+
         // }else{
         //     return response()->json([
         //         "Info de la cesta" => "No tiene ningun producto",
@@ -150,52 +149,51 @@ class JuegosController extends Controller
     }
 
 
-    public function desactivarCesta($id){
+    public function desactivarCesta($id)
+    {
         $productoEncontrado = Cesta::find($id);
 
-        if($productoEncontrado){
+        if ($productoEncontrado) {
             // Modifica el campo 'activo' y guarda los cambios
             $productoEncontrado->activo = 0;
             $productoEncontrado->save();
 
             return response()->json("Producto desactivado");
-        }else{
+        } else {
             return response()->json('producto no encontrado', 200); //colocar el 200 aunque no se encuentre el elemento, la función ha hecho su trabajo y no ha ocurrido algún error
         }
     }
 
 
-    public function revisarCesta($id){
+    public function revisarCesta($id)
+    {
 
         $bandera = false;
 
 
         // Consulta los productos en la cesta que están activos para este usuario
         $consulta = Cesta::select("juego_id", 'id')
-        ->where("users_id", '=', $id)
-        ->where('activo', '=', 1)
-        ->get();
+            ->where("users_id", '=', $id)
+            ->where('activo', '=', 1)
+            ->get();
 
 
-        if($consulta->isNotEmpty()){
+        if ($consulta->isNotEmpty()) {
             $bandera = !$bandera;
 
             // return response()->json($bandera);
             return response()->json([
                 "ok" => $bandera,
                 "Juegos_ID" => $consulta
-            ],200);
-
-        }else{
-            return response()->json($bandera,200);
+            ], 200);
+        } else {
+            return response()->json($bandera, 200);
         }
-        
-
     }
 
-    
 
-    
+
+
 
     public function getCesta2($id)
     {
@@ -230,11 +228,217 @@ class JuegosController extends Controller
 
     // FUNCIONES PARA GESTIONAR LOS JUEGOS
 
-    public function getCategoria($id){
+    public function getCategoria($id) {}
 
-        
+    public function Post_registroJuego(Request $peticion)
+    {
 
+        \Log::info($peticion->all());
+
+        $peticion->validate([
+            "titulo" => 'required|min:3',
+            // "portada" => 'required|string',
+
+            // 👇 portada
+            // 'portada' => 'required|image|mimes:jpg,jpeg,png,webp,avif|max:2048',
+            'portada' => 'required|image|mimes:jpg,jpeg,png,webp,avif',
+            // "versionJuego" => '';
+            "categoria_id" => 'required|integer',
+            "precio" => 'required|numeric|min:1',
+            "precioDescontado" => 'nullable|numeric',
+            "versionJuego" => 'nullable|string',
+            "descuento" => 'nullable|numeric',
+            "inicio_descuento" => 'nullable|date',
+            "fin_descuento" => 'nullable|date',
+            "Descripcion" => 'nullable|string',
+
+            "colorFondo" => 'string',
+            "plataforma" => 'string',
+            "lanzamiento" => 'nullable|date',
+
+            // 'logo' => 'required|image|mimes:jpg,jpeg,png,svg,webp,avif|max:1024',
+            // 'logo' => 'required|mimes:jpg,jpeg,png,webp,avif|max:2048',
+            // 'logo' => 'mimes:jpg,jpeg,png,webp,avif|max:2048',
+            'logo' => 'mimes:jpg,jpeg,png,webp,avif',
+
+
+            // 👇 galería
+            'imagenes' => 'required|array|min:1|max:10',
+            // 'imagenes.*' => 'required|string'
+            // 'imagenes.*' => 'image|mimes:jpg,jpeg,png,webp,avif|max:2048',
+            'imagenes.*' => 'image|mimes:jpg,jpeg,png,webp,avif',
+
+
+
+        ]);
+
+
+        DB::beginTransaction();
+
+        try {
+
+
+            // 🖼️ Guardar portada
+            $rutaPortada = $peticion->file('portada')->store('portadas', 'public');
+
+            // guardar logo
+            $rutaLogo = $peticion->file('logo')->store('logos', 'public');
+
+
+            // 🎮 Crear juego
+            $juego = Juegos::create([
+
+                'titulo' => $peticion->titulo,
+                'categoria_id' => $peticion->categoria_id,
+                // 'portada' => $peticion->portada,
+                'portada' => $rutaPortada,
+                'precio' => $peticion->precio,
+                'descuento' => $peticion->descuento,
+                'precioDescontado' => $peticion->precioDescontado,
+                'versionJuego' => $peticion->versionJuego,
+                'inicio_descuento' => $peticion->inicio_descuento,
+                'fin_descuento' => $peticion->fin_descuento,
+                'Descripcion' => $peticion->Descripcion,
+                'colorFondo' => $peticion->colorFondo,
+                'plataforma' => $peticion->plataforma,
+                'lanzamiento' => $peticion->lanzamiento,
+                'activo' => 1
+            ]);
+
+            // aquí en lugar de usar el "Galeria_Juegos() para guardar, se usa la funcion escrita en el modelo de
+            // Juegos.php, entrando primeramente a la variable declarada $juego
+            // Esto se hace atraves de la id que se coloca en la tabla Galeria_Juegos para conectar la tabla juegos 
+            // foreach ($peticion->imagenes as $ruta) {
+            //     $juego->galeria()->create([
+            //         'ruta_img' => $ruta,
+            //         'activo' => 1,
+            //     ]);
+            // }
+
+            // Guardar la ruta en la tabla Logo_juegos
+            $juego->logo()->create([
+                'ruta_logo' => $rutaLogo,
+                'activo' => 1
+            ]);
+
+
+            // 2️⃣ Guardar imágenes (máx 10)
+            foreach ($peticion->file('imagenes') as $imagen) {
+                $ruta = $imagen->store('juegos', 'public');
+
+                $juego->galeria()->create([
+                    'ruta_img' => $ruta,
+                    'activo' => 1
+                ]);
+            }
+
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Juego registrado correctamente',
+                'Juego' => $juego->load('galeria'),
+            ], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+
+
+            return response()->json([
+                'error' => 'Error al registrarse el juego',
+                'detalle' => $e->getMessage(),
+            ], 500);
+        }
     }
 
 
+
+    public function getBuscador(Request $peticion)
+    {
+
+        $solicitud = $peticion->query('buscador');
+        // en angular
+        // crear una funcionalidad que habilite la busqueda solo cuando haya algo escrito
+        // mientras esté vacío el campo, que no se active... yo que se
+
+        $resultado = Juegos::select(
+            'id',
+            'titulo',
+            'portada',
+            'precio',
+            'descuento',
+            'precioDescontado'
+        )
+            ->where('titulo', 'LIKE', '%' . $solicitud . '%')
+            ->get();
+
+
+        return response()->json($resultado);
+    }
+
+
+    public function desactivarGaleria($id)
+    {
+
+        $imagen =  Galeria_Juegos::find($id);
+
+        if (!$imagen) {
+            return response()->json(["Error" => "Image no encontrada"], 404);
+        }
+
+        $imagen->activo = 0;
+        $imagen->save();
+
+        return response()->json(["Message" => "Imagen desactivada"]);
+    }
+
+
+
+    public function put_ActualizarJuego(Request $request, $id)
+    {
+
+        // dd($request->all());
+        // PARA detectar fallos en las peticiones,  POST, PUT, DELETE, SELECT. ESAS BAINAS 
+        \Log::info($request->all());
+
+        $juego = Juegos::find($id);
+
+        if (!$juego) {
+            return response()->json(['Error' => 'Juego no encontrado'], 404);
+        }
+
+        $juego->titulo = $request->titulo;
+        $juego->categoria_id = $request->categoria_id;
+        $juego->precio = $request->precio;
+        $juego->descuento = $request->descuento;
+        $juego->descripcion = $request->descripcion ?: null;
+        $juego->versionJuego = $request->versionJuego ?: null;
+        $juego->inicio_descuento = $request->inicio_descuento ?: null;
+        $juego->fin_descuento = $request->fin_descuento ?: null;
+        $juego->colorFondo = $request->colorFondo ?: '#000000';
+
+
+        // 🔹 Actualizar portada (si viene)
+        if ($request->hasFile('portada')) {
+            // path o ruta
+            $ruta = $request->File('portada')->store('portadas', 'public');
+            $juego->portada = $ruta;
+        }
+
+        // 🔹 Actualizar logo (si viene)
+        if ($request->hasFile('logo')) {
+            $path = $request->file('logo')->store('logos', 'public');
+
+            // Si tienes relación con otra tabla, aquí cambiaría
+            $juego->ruta_logo = $path;
+        }
+
+        $juego->save();
+
+        return response()->json([
+            'mensaje' => 'Juego actualizado correctamente',
+            'data' => $juego
+        ]);
+
+
+    }
 }

@@ -34,6 +34,10 @@ class DatabaseSeeder extends Seeder
             'Deportes', 'Carreras', 'Terror', 'Combate', 'Música y Ritmo'
         ];
 
+        $roles = [
+            'Usuario', 'Dueño', 'Developer', 'Editor', 'Admin'
+        ];
+
         // Crear una categoría a la vez
         foreach ($categorias as $categoria) {
             Categorias::create([

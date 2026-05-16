@@ -42,5 +42,11 @@ class CategoriasController extends Controller
         );
 
     }
+    
+    public function getVersionJuego($id){
+        $version_juego_id = Juegos::select(
+            
+        );
+    }
 
 }

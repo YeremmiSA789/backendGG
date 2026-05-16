@@ -9,7 +9,16 @@ class Logo_Juegos extends Model
 {
     use HasFactory;
 
-    public function juegos(){
+    protected $table = 'logo_juegos';
+
+    protected $fillable = [
+        'ruta_logo',
+        'juego_id',
+        'activo'
+    ];
+
+    public function juegos()
+    {
         return $this->hasMany(Juegos::class, 'logoJuego_id');
     }
 }

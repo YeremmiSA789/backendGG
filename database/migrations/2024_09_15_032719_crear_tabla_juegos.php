@@ -20,7 +20,7 @@ return new class extends Migration
             $table->float('precio',5,2);
             $table->float('descuento',2,0)->nullable();
             $table->float('precioDescontado',5,2)->nullable();
-            $table->text('Descripcion');
+            $table->text('Descripcion')->nullable();
 
             $table->date('inicio_descuento')->nullable();
             $table->date('fin_descuento')->nullable();
