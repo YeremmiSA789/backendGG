@@ -25,7 +25,6 @@ return new class extends Migration
 
         // 2. Cambiar tipo de columna
         DB::statement("ALTER TABLE juegos MODIFY versionJuego INT");
-
     }
 
     /**
@@ -33,15 +32,16 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // revertir a string
-        DB::table('users')->update([
-            'tipo_juego' => DB::raw("
-                CASE
-                    WHEN versionJuego = 1 THEN 'JUEGO BASE',
-                    WHEN versionJuego = 2 THEN 'DLC',
-                    ELSE NULL
-                END
-            ")
+        DB::statement("ALTER TABLE juegos MODIFY versionJuego VARCHAR(255)");
+
+        DB::table('juegos')->update([
+            'versionJuego' => DB::raw("
+            CASE
+                WHEN versionJuego = 0 THEN 'JUEGO BASE'
+                WHEN versionJuego = 1 THEN 'DLC'
+                ELSE NULL
+            END
+        ")
         ]);
     }
 };

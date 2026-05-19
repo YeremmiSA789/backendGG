@@ -246,7 +246,7 @@ class JuegosController extends Controller
             "categoria_id" => 'required|integer',
             "precio" => 'required|numeric|min:1',
             "precioDescontado" => 'nullable|numeric',
-            "versionJuego" => 'nullable|string',
+            "versionJuego" => 'nullable|integer',
             "descuento" => 'nullable|numeric',
             "inicio_descuento" => 'nullable|date',
             "fin_descuento" => 'nullable|date',
@@ -432,13 +432,15 @@ class JuegosController extends Controller
             $juego->ruta_logo = $path;
         }
 
+        $juego->versionJuego = (int) $request->versionJuego;
+
+        // dd($juego->versionJuego);
+
         $juego->save();
 
         return response()->json([
             'mensaje' => 'Juego actualizado correctamente',
             'data' => $juego
         ]);
-
-
     }
 }
